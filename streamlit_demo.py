@@ -72,6 +72,9 @@ def main_loop():
         st.video(file)
         #Now we need to use this to 
     st.write(str(model))
+    model.eval()
+    image = file
+    value = model()
 
 if __name__ == "__main__":
     main_loop()
