@@ -3,11 +3,17 @@ import pickle as pickle
 import pandas as pd 
 
 #Now let's try loading up our other stuff
-import video_loading as vl
 import torch
 
-model = torch.load("movenet_lightning.pth")
 
+from movenet import get_pose_net
+ 
+import cv2
+import model_factory
+import torch.nn.functional as F
+
+
+model = model_factory.load_model("movenet_lightning")
 
 # Dictionary that maps from joint names to keypoint indices.
 KEYPOINT_DICT = {
@@ -71,10 +77,59 @@ def main_loop():
     if file:
         st.video(file)
         #Now we need to use this to 
-    st.write(str(model))
-    model.eval()
-    image = file
-    value = model()
+        #Now let's try to do prediction
+        model = model_factory.load_model("movenet_lightning")
+        input_size = 192
+        cuda = False
+        device = torch.device("cpu")
+
+
+        video_path = "data/video/id0_jab_1.mp4"
+        cap = cv2.VideoCapture(video_path)
+        #load this 
+        first_frame = cap.read()
+
+        #Let's evaluate the model
+        first_frame = first_frame[1]
+        model = model.to(device)
+        model.eval()
+        model.zero_grad()
+        first_frame = torch.Tensor(first_frame)
+        # print(first_frame)
+        # print(first_frame.shape)
+
+        channel_1 = torch.empty((1, 1920, 1080))
+        channel_2 = torch.empty((1, 1920, 1080))
+        channel_3 = torch.empty((1, 1920, 1080))
+
+        channel_1 = first_frame[:,:,0]
+        channel_2 = first_frame[:,:,1]
+        channel_3 = first_frame[:,:,2]
+        # print(channel_1.shape)
+        channel_1 = channel_1[None, None, None, :,:]
+        channel_2 = channel_2[None, None, None, :,:]
+        channel_3 = channel_3[None, None, None, :,:]
+        assert channel_1.shape == (1,1,1, 1920, 1080)
+        # print(channel_1.shape)
+
+        channel_1 = F.interpolate(channel_1,size = (1,192,192))
+        channel_2 = F.interpolate(channel_2, size = (1,192,192))
+        channel_3 = F.interpolate(channel_3, size=(1,192,192))
+        # print(channel_1.shape)
+
+        new_output = torch.empty((1,192,192,3))
+        new_output[0,:,:,0] = channel_1[0,0,0,:,:]
+        new_output[0,:,:,1] = channel_2[0,0,0,:,:]
+        new_output[0,:,:,2] = channel_3[0,0,0,:,:]
+
+        # print(new_output.shape) 
+
+        new_output = new_output.to(device)
+        output = model(new_output)
+        # print(output.shape)
+        st.write(output)
+
+    
 
 if __name__ == "__main__":
     main_loop()

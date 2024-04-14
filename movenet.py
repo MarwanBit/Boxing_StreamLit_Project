@@ -80,7 +80,8 @@ class MoveNet(nn.Module):
             self.__setattr__(head, fc)
 
 
-    def forward(self, x):
+    def forward(self, x): 
+        #delete after the x just incase
         # specify the device
         device = x.device
         self.weight_to_center = self.weight_to_center.to(device)
