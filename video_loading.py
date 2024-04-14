@@ -20,6 +20,7 @@ import tensorflow as tf
 
 import tensorflow_hub as hub
 from tensorflow_docs.vis import embed
+import torch
 
 #Now lets load the model
 
@@ -68,12 +69,7 @@ KEYPOINT_EDGE_INDS_TO_COLOR = {
     (14, 16): "c",
 }
 
-model_name = "movenet_lightning"
-
-if "movenet_lightning" in model_name:
-    module = hub.load("https://tfhub.dev/google/movenet/singlepose/lightning/4")
-    input_size = 192
-
+'''
 def movenet(input_image):
         """Runs detection on an input image.
 
@@ -95,7 +91,7 @@ def movenet(input_image):
         # Output is a [1, 1, 17, 3] tensor.
         keypoint_with_scores = outputs["output_0"].numpy()
         return keypoint_with_scores
-
+'''
 
 
 
